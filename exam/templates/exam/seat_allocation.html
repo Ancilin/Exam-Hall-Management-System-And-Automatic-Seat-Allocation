@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seat Allocation Matrix Engine - ExamMatrix</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(255, 255, 255, 0.2);
+            --accent-purple: #8b5cf6;
+            --accent-indigo: #6366f1;
+            --accent-blue: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-indigo); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        select, .form-select, .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #f8fafc !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+        }
+        select option, .form-select option, .form-control option {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            padding: 10px !important;
+        }
+
+        .hall-checkbox-container {
+            padding: 12px 16px;
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hall-checkbox-container:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .hall-checkbox-container input:checked + span {
+            font-weight: 700;
+            color: var(--accent-indigo);
+        }
+
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 14px 28px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.5);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:admin_dashboard' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Seat Allocation Engine</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Anti-Cheat Interleaving Matrix</div>
+                </div>
+            </a>
+
+            <div class="ms-auto">
+                <a href="{% url 'exam:admin_dashboard' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if 'error' in message.tags %}alert-danger bg-danger bg-opacity-25 text-white border-0{% else %}alert-success bg-success bg-opacity-25 text-white border-0{% endif %} mb-4 rounded-3 p-3" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <!-- Generator Card -->
+                <div class="glass-card p-4 p-md-5 mb-4">
+                    <h3 class="fw-extrabold text-white mb-2 fs-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-cpu text-indigo"></i> Generate Anti-Cheat Matrix
+                    </h3>
+                    <p class="text-secondary fs-6 mb-4">Select an examination slot and candidate halls. The system will interleave students department-wise to eliminate malpractice risk.</p>
+
+                    <form method="POST" action="">
+                        {% csrf_token %} 
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.exam.id_for_label }}" class="form-label text-white fw-semibold">Select Examination: *</label>
+                            {{ form.exam }}
+                            {% if form.exam.errors %}<div class="text-danger small mt-1">{{ form.exam.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-white fw-semibold mb-3">Select Candidate Halls: *</label>
+                            
+                            <div class="row g-3" id="hall-checkbox-list">
+                                {% for hall_choice in form.halls %}
+                                    <div class="col-md-6">
+                                        <label for="{{ hall_choice.id_for_label }}" class="hall-checkbox-container w-100 mb-0">
+                                            {{ hall_choice.tag }} 
+                                            <span>{{ hall_choice.choice_label }}</span>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            {% if form.halls.errors %}<div class="text-danger small mt-2">{{ form.halls.errors }}</div>{% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-glow w-100 fs-6">
+                            <i class="bi bi-play-circle-fill me-2"></i> Execute Anti-Cheat Allocation Engine
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Recent Allocations Card -->
+                <div class="glass-card p-4">
+                    <h4 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-cyan"></i> Recently Allocated Exams
+                    </h4>
+                    
+                    {% if recent_allocations %}
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for allocation in recent_allocations %}
+                                <div class="list-group-item bg-transparent text-white border-white border-opacity-10 d-flex justify-content-between align-items-center px-0 py-3">
+                                    <div class="fw-semibold fs-6"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ allocation.exam__exam_name }}</div>
+                                    <a href="{% url 'exam:all_seating_plans' allocation.exam__id %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                        View Matrix <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent allocations executed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Available Exams Sidebar -->
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="fw-bold text-white mb-3 fs-6 d-flex align-items-center gap-2">
+                        <i class="bi bi-journal-text text-amber"></i> Scheduled Exams
+                    </h5>
+                    
+                    {% if exams %}
+                        <div class="text-secondary" style="font-size: 0.88rem;">
+                            {% for exam in exams|slice:":5" %}
+                                <div class="mb-3">
+                                    <div class="fw-bold text-white fs-6">{{ exam.exam_name }}</div>
+                                    <div><i class="bi bi-people me-1 text-primary"></i> {{ exam.enrolled_students_count }} Students Expected</div>
+                                    <div><i class="bi bi-calendar3 me-1 text-primary"></i> {{ exam.date }}</div>
+                                </div>
+                                {% if not forloop.last %}<hr class="border-white border-opacity-10 my-2">{% endif %}
+                            {% empty %}
+                                <p class="text-muted mb-0">No exams available.</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Available Halls Sidebar -->
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold text-white mb-3 fs-6 d-flex align-items-center gap-2">
+                        <i class="bi bi-building text-emerald"></i> Available Hall Grid Capacities
+                    </h5>
+                    
+                    <div class="list-group list-group-flush bg-transparent">
+                        {% for hall in halls %}
+                            <div class="list-group-item bg-transparent text-white border-white border-opacity-10 d-flex justify-content-between align-items-center px-0 py-2" style="font-size: 0.9rem;">
+                                <span><i class="bi bi-door-open me-2 text-emerald"></i>{{ hall.hall_name }}</span>
+                                <span class="badge bg-emerald bg-opacity-25 text-emerald border border-emerald border-opacity-25 rounded-pill">{{ hall.capacity }} Seats</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const examSelect = document.getElementById('id_exam'); 
+            const hallCheckboxes = document.querySelectorAll('input[name="halls"]');
+            const apiUrlBase = '{% url "exam:get_exam_halls_api" 0 %}';
+
+            function updateHallsForExam(examId) {
+                hallCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                if (!examId) return;
+                
+                const apiUrl = apiUrlBase.replace('0', examId);
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('API fetch error');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.halls) {
+                            const assignedHallIds = data.halls.map(hall => String(hall.id));
+                            hallCheckboxes.forEach(checkbox => {
+                                if (assignedHallIds.includes(checkbox.value)) {
+                                    checkbox.checked = true;
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('AJAX error:', error);
+                    });
+            }
+
+            if (examSelect) {
+                examSelect.addEventListener('change', function() {
+                    updateHallsForExam(this.value);
+                });
+
+                if (examSelect.value) {
+                    updateHallsForExam(examSelect.value);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

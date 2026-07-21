@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assign Invigilators - ExamMatrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-emerald: #10b981;
+            --accent-teal: #0d9488;
+            --accent-indigo: #6366f1;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-emerald); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        select, .form-select, .form-control {
+            background-color: #0f172a !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #f8fafc !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+        }
+        select option, .form-select option, .form-control option {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        .table-dark-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-glass);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:manage_exams' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Assign Invigilators</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Faculty Room Assignment for {{ exam.exam_name }}</div>
+                </div>
+            </a>
+
+            <div class="ms-auto d-flex gap-2">
+                <a href="{% url 'exam:manage_exams' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Manage Exams
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} bg-opacity-25 border-0 text-white rounded-3 mb-4" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.fields.hall.queryset|length < exam.halls.all|length %}
+            <div class="glass-card p-3 mb-4 border-warning bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Notice:</strong> Some halls for this exam slot already have invigilators assigned and are excluded from the selection dropdown below.
+            </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Assignment Form Card -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 p-md-5 h-100">
+                    <h4 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+                        <i class="bi bi-plus-circle-fill text-emerald"></i> Create Invigilator Duty
+                    </h4>
+                    <p class="text-secondary fs-6 mb-4">Assign a faculty member to invigilate a designated hall for <strong>{{ exam.exam_name }}</strong>.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger bg-danger bg-opacity-25 border-0 text-white mb-3" role="alert">
+                                Please correct form errors below.
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.hall.id_for_label }}" class="form-label text-white fw-semibold">Select Hall:</label>
+                            {{ form.hall }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.teacher.id_for_label }}" class="form-label text-white fw-semibold">Select Faculty Invigilator:</label>
+                            {{ form.teacher }}
+                        </div>
+
+                        <button type="submit" class="btn btn-emerald rounded-pill w-100 py-3 fw-bold text-white" style="background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal)); border: none;">
+                            Confirm Assignment
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Existing Assignments List Card -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 p-md-5 h-100">
+                    <h4 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-teal"></i> Assigned Invigilators
+                    </h4>
+                    <p class="text-secondary fs-6 mb-4">Current faculty hall assignments for this exam slot.</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark-glass align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                                    <th>Hall</th>
+                                    <th>Faculty Invigilator</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.9rem;">
+                                {% for assignment in assigned_invigilators %}
+                                    <tr>
+                                        <td class="fw-bold text-emerald"><i class="bi bi-door-open me-2"></i>{{ assignment.hall.hall_name }}</td>
+                                        <td class="text-white">Prof. {{ assignment.teacher.user.username }}</td>
+                                        <td class="text-end">
+                                            <form action="{% url 'exam:delete_invigilator_assignment' assignment.id %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Remove</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No invigilators assigned yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

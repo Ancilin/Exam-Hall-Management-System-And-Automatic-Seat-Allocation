@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Students - ExamMatrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            --accent-purple: #8b5cf6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-blue); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-card {
+            padding: 20px;
+            position: relative;
+            border-left: 4px solid var(--accent-blue) !important;
+            height: 100%;
+        }
+
+        .form-select, .form-control {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            padding: 10px 16px !important;
+        }
+        .form-select option { background-color: #0f172a; color: #fff; }
+
+        .table-dark-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-glass);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:admin_dashboard' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Manage Students</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Student Records & Department Breakdown</div>
+                </div>
+            </a>
+
+            <div class="ms-auto d-flex gap-2">
+                <a href="{% url 'exam:add_student' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo)); border: none;">
+                    <i class="bi bi-plus-lg me-1"></i> Add / Upload Students
+                </a>
+                <a href="{% url 'exam:admin_dashboard' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Department Breakdown Overview -->
+        <div class="glass-card p-4 mb-4">
+            <h4 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3 text-blue"></i> Department Overview
+            </h4>
+            <div class="row g-3">
+                {% for stat in department_stats %}
+                    <div class="col-md-4 col-lg-3">
+                        <div class="glass-card stats-card text-center">
+                            <div class="fw-bold text-white fs-6 mb-1">{{ stat.name }}</div>
+                            <div class="fw-extrabold text-blue fs-2 mb-0">{{ stat.student_count }}</div>
+                            <a href="?department={{ stat.id }}" class="stretched-link"></a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12"><p class="text-muted mb-0">No departments configured.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Student List & Filtering -->
+        <div class="glass-card p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <h4 class="fw-bold text-white mb-0 fs-5 d-flex align-items-center gap-2">
+                    <i class="bi bi-people-fill text-indigo"></i> Student Directory
+                </h4>
+
+                <!-- Filter Form -->
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <div style="min-width: 220px;">
+                        {{ filter_form.department }}
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-info rounded-pill px-3 text-white fw-bold">Filter</button>
+                    <a href="{% url 'exam:manage_students' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Clear</a>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark-glass align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                            <th>Roll No</th>
+                            <th>Student Username</th>
+                            <th>Department</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                        {% for student in students %}
+                            <tr>
+                                <td class="fw-bold text-blue">{{ student.roll_no }}</td>
+                                <td class="text-white">{{ student.user.username }}</td>
+                                <td><span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-25 px-3 py-1 rounded-pill">{{ student.department.name }}</span></td>
+                                <td class="text-end">
+                                    <a href="{% url 'exam:edit_student' student.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3 me-1">Edit</a>
+                                    <a href="{% url 'exam:delete_student' student.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No student records found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

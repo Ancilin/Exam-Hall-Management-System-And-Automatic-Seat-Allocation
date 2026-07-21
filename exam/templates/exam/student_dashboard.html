@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Portal - ExamMatrix</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #0284c7;
+            --accent-purple: #8b5cf6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-blue); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .seat-badge {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.3rem;
+            padding: 8px 18px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+            display: inline-block;
+        }
+
+        .table-dark-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-glass);
+        }
+
+        .dropdown-menu-dark-glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:home' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Student Portal</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">ExamMatrix Seat Lookup</div>
+                </div>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <button class="btn btn-sm glass-card border text-white dropdown-toggle px-3 py-2 rounded-pill" type="button" id="studentMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-fill text-blue me-1"></i> {{ student.user.username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark-glass dropdown-menu-end shadow mt-2" aria-labelledby="studentMenuDropdown">
+                        <li><h6 class="dropdown-header text-secondary">{{ student.department.name }}</h6></li>
+                        <li><span class="dropdown-item-text text-white">Roll No: <strong class="text-blue">{{ student.roll_no }}</strong></span></li>
+                        <li><hr class="dropdown-divider border-white border-opacity-10"></li>
+                        <li>
+                            <form method="post" action="{% url 'exam:student_logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Welcome Banner -->
+        <div class="glass-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="badge bg-blue bg-opacity-25 text-blue border border-blue border-opacity-25 px-3 py-2 rounded-pill mb-2 fw-semibold">
+                        <i class="bi bi-person-vcard me-1"></i> Roll No: {{ student.roll_no }}
+                    </span>
+                    <h1 class="fw-extrabold text-white mb-1 fs-2">Welcome, {{ student.user.username }}</h1>
+                    <p class="text-secondary fs-6 mb-0">Department of {{ student.department.name }} • Personalized Exam Schedule & Seat Location</p>
+                </div>
+                <div>
+                    <a href="{% url 'exam:home' %}" class="btn btn-outline-light rounded-pill px-3">
+                        <i class="bi bi-globe me-1"></i> Home Page
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Exam Seat Cards -->
+        <h3 class="fw-bold text-white mb-4 fs-5 d-flex align-items-center gap-2">
+            <i class="bi bi-calendar-event text-blue"></i> Your Allocated Exam Seats
+        </h3>
+
+        {% if exam_details %}
+            <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+                {% for detail in exam_details %}
+                    <div class="col">
+                        <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="fw-bold text-white mb-0">{{ detail.exam.exam_name }}</h5>
+                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1">
+                                    Allocated
+                                </span>
+                            </div>
+
+                            <div class="text-secondary mb-4" style="font-size: 0.9rem;">
+                                <div><i class="bi bi-calendar3 me-2 text-blue"></i><strong>Date:</strong> {{ detail.exam.date|date:"F d, Y" }}</div>
+                                <div><i class="bi bi-clock me-2 text-blue"></i><strong>Time:</strong> {{ detail.exam.start_time }} - {{ detail.exam.end_time }}</div>
+                            </div>
+
+                            <!-- Hall & Seat Highlight Card -->
+                            <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass);">
+                                <div class="row align-items-center text-center text-md-start">
+                                    <div class="col-md-7 mb-2 mb-md-0">
+                                        <div class="text-secondary" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Exam Hall Location</div>
+                                        <div class="fw-extrabold text-white fs-5"><i class="bi bi-building me-1 text-cyan"></i> {{ detail.hall.hall_name }}</div>
+                                    </div>
+                                    <div class="col-md-5 text-md-end">
+                                        <div class="text-secondary" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Your Seat Code</div>
+                                        <div class="seat-badge mt-1">{{ detail.seat_number }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if detail.invigilator %}
+                                <div class="p-2 px-3 rounded-3" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); font-size: 0.85rem;">
+                                    <i class="bi bi-person-badge me-1 text-indigo"></i> <strong>Invigilator:</strong> Prof. {{ detail.invigilator.user.username }} ({{ detail.invigilator.subject }})
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass-card p-4 text-center text-muted mb-5">
+                <i class="bi bi-info-circle fs-3 d-block mb-2 text-secondary"></i>
+                You have no upcoming exam seat allocations at this moment. Please check back after your administration publishes seat allocations.
+            </div>
+        {% endif %}
+
+        <!-- Full Department Schedule -->
+        <h3 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+            <i class="bi bi-journal-text text-purple"></i> {{ student.department.name }} Department Schedule
+        </h3>
+
+        <div class="glass-card p-3 p-md-4">
+            <div class="table-responsive">
+                <table class="table table-dark-glass align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                            <th>Exam Subject Name</th>
+                            <th>Exam Date</th>
+                            <th>Time Slot</th>
+                            <th>Allocation Status</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                        {% for exam in department_exams %}
+                            <tr>
+                                <td class="fw-semibold text-white">{{ exam.exam_name }}</td>
+                                <td>{{ exam.date|date:"F d, Y" }}</td>
+                                <td class="text-secondary">{{ exam.start_time }} - {{ exam.end_time }}</td>
+                                <td>
+                                    {% if exam.id in allocated_exam_ids %}
+                                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Seat Allocated
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 px-3 py-1 rounded-pill">
+                                            <i class="bi bi-hourglass-split me-1"></i> Pending Allocation
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No exams scheduled for your department yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

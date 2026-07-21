@@ -1,0 +1,358 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Exams - ExamMatrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-amber: #f59e0b;
+            --accent-indigo: #6366f1;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-amber); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-amber), var(--accent-indigo));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .form-select, .form-control, input[type="text"], input[type="date"], input[type="time"], input[type="number"] {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            padding: 10px 16px !important;
+        }
+        .form-select option { background-color: #0f172a; color: #fff; }
+
+        .table-dark-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-glass);
+        }
+    </style>
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const $departmentSelector = $('#id_department');
+    const $totalStudentsInput = $('#id_total_students'); 
+    
+    function updateStudentCount() {
+        const selectedDepartmentIds = $departmentSelector.val(); 
+        
+        if (selectedDepartmentIds && selectedDepartmentIds.length > 0) {
+            const data = selectedDepartmentIds.map(id => `department_ids=${id}`).join('&');
+
+            $.ajax({
+                url: '{% url "exam:get_student_count" %}', 
+                type: 'GET',
+                data: data,
+                success: function(response) {
+                    $totalStudentsInput.val(response.total_students);
+                },
+                error: function() {
+                    $totalStudentsInput.val('Error');
+                }
+            });
+        } else {
+            $totalStudentsInput.val(0);
+        }
+    }
+
+    $departmentSelector.on('change', updateStudentCount);
+    updateStudentCount();
+});
+</script>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:admin_dashboard' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Manage Exams</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Exam Slots & Multi-Dept Scheduling</div>
+                </div>
+            </a>
+
+            <div class="ms-auto">
+                <a href="{% url 'exam:admin_dashboard' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if messages %}
+            <div id="django-messages"
+                 data-messages='[{% for message in messages %}{"tags":"{{ message.tags|escapejs }}","message":"{{ message|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                 style="display:none"></div>
+
+            <script>
+                (function() {
+                    try {
+                        var container = document.getElementById('django-messages');
+                        var raw = container ? container.getAttribute('data-messages') : '[]';
+                        var messages = JSON.parse(raw || '[]');
+
+                        messages.forEach(function(m) {
+                            if (m.tags === 'error') {
+                                alert("🚨 Scheduling Error:\n\n" + m.message);
+                            } else {
+                                var wrapper = document.createElement('div');
+                                wrapper.className = 'alert alert-' + (m.tags || 'info') + ' border-0 bg-opacity-25 text-white mb-3 rounded-3';
+                                wrapper.setAttribute('role', 'alert');
+                                wrapper.innerHTML = m.message;
+                                var root = document.querySelector('.container') || document.body;
+                                root.insertBefore(wrapper, root.firstChild);
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error processing Django messages:', e);
+                    }
+                })();
+            </script>
+        {% endif %}
+
+        <!-- Stat Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="glass-card p-4 text-center">
+                    <div class="stat-val text-amber">{{ stats.total }}</div>
+                    <div class="text-secondary fs-6 fw-semibold">Total Scheduled Exams</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 text-center">
+                    <div class="stat-val text-emerald">{{ stats.upcoming }}</div>
+                    <div class="text-secondary fs-6 fw-semibold">Upcoming Exams</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 text-center">
+                    <div class="stat-val text-indigo">{{ stats.completed }}</div>
+                    <div class="text-secondary fs-6 fw-semibold">Completed Exams</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule New Exam Collapse Form -->
+        <div class="mb-4">
+            <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#scheduleExamForm" aria-expanded="false" style="background: linear-gradient(135deg, var(--accent-amber), var(--accent-indigo)); border: none;">
+                <i class="bi bi-plus-circle me-1"></i> Schedule New Examination
+            </button>
+            
+            <div class="collapse{% if form.errors %} show{% endif %}" id="scheduleExamForm">
+                <div class="glass-card p-4 p-md-5 mb-4">
+                    <h4 class="fw-bold text-white mb-4 text-center">New Examination Details</h4>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {% for field in form %}
+                                    {% if field.name == 'exam_name' or field.name == 'date' or field.name == 'start_time' or field.name == 'end_time' %}
+                                        <div class="mb-3">
+                                            <label for="{{ field.id_for_label }}" class="form-label text-white fw-semibold">{{ field.label }}</label>
+                                            {{ field }}
+                                            {% if field.errors %}
+                                                <div class="text-danger small mt-1">{% for error in field.errors %}{{ error }}{% endfor %}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div> 
+                            
+                            <div class="col-md-6">
+                                {% for field in form %}
+                                    {% if field.name == 'department' or field.name == 'halls' %}
+                                        <div class="mb-3">
+                                            <label for="{{ field.id_for_label }}" class="form-label text-white fw-semibold">{{ field.label }}</label>
+                                            
+                                            {% if field.name == 'halls' %}
+                                                <div class="row g-2">
+                                                    {% for choice in field %}
+                                                        <div class="col-6"> 
+                                                            <label class="form-check text-secondary" for="{{ choice.id_for_label }}">
+                                                                {{ choice.tag }} 
+                                                                <span class="text-white">{{ choice.choice_label }}</span>
+                                                            </label>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ field }}
+                                            {% endif %}
+
+                                            {% if field.errors %}
+                                                <div class="text-danger small mt-1">{% for error in field.errors %}{{ error }}{% endfor %}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% for field in form %}
+                            {% if field.name == 'total_students' %}
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ field.id_for_label }}" class="form-label text-white fw-semibold">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.errors %}<div class="text-danger small mt-1">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary rounded-pill w-100 py-3 fw-bold mt-2" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo)); border: none;">
+                            Create Exam Schedule
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Exams Directory -->
+        <div class="glass-card p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <h4 class="fw-bold text-white mb-0 fs-5 d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar3 text-amber"></i> Scheduled Exams List
+                </h4>
+
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <div style="min-width: 220px;">
+                        {{ filter_form.department }}
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-info rounded-pill px-3 text-white fw-bold">Filter</button>
+                    <a href="{% url 'exam:manage_exams' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Clear</a>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark-glass align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                            <th>Exam Name</th>
+                            <th>Department(s)</th>
+                            <th>Date & Time</th>
+                            <th>Assigned Halls</th>
+                            <th>Invigilators</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                        {% for exam in exams %}
+                            <tr>
+                                <td class="fw-bold text-white">{{ exam.exam_name }}</td>
+                                <td>
+                                    {% for dept in exam.department.all %}
+                                        <span class="badge bg-secondary bg-opacity-25 text-white border border-secondary border-opacity-25 px-2 py-1 rounded me-1">{{ dept.name }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>{{ exam.date }}<br><small class="text-secondary">{{ exam.start_time|time:"P" }} - {{ exam.end_time|time:"P" }}</small></td>
+                                <td>
+                                    {% for hall in exam.halls.all %}
+                                        <span class="text-cyan">{{ hall.hall_name }}</span>{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endfor %}
+                                </td>
+                                
+                                <td>
+                                    {% if exam.consolidated_invigilator and exam.consolidated_invigilator != 'None assigned' %}
+                                        <span class="text-emerald fw-semibold">{{ exam.consolidated_invigilator | safe }}</span>
+                                    {% else %}
+                                        <span class="text-danger small">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'exam:edit_exam' exam.id %}" class="btn btn-sm btn-outline-info rounded-start-pill" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                                        <a href="{% url 'exam:assign_invigilator' exam.id %}" class="btn btn-sm btn-outline-success" title="Assign Invigilators"><i class="bi bi-person-plus"></i></a>
+                                        <a href="{% url 'exam:all_seating_plans' exam.id %}" class="btn btn-sm btn-outline-primary" title="View Seating Matrix"><i class="bi bi-grid-3x3-gap"></i></a>
+                                        <a href="{% url 'exam:delete_exam' exam.id %}" class="btn btn-sm btn-outline-danger rounded-end-pill" title="Delete"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No exams scheduled.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

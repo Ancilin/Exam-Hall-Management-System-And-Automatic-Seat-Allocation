@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard - ExamMatrix</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(255, 255, 255, 0.2);
+            --accent-purple: #8b5cf6;
+            --accent-indigo: #6366f1;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-cyan: #06b6d4;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Blobs */
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-indigo); top: -100px; left: -100px; }
+        .blob-2 { width: 500px; height: 500px; background: var(--accent-purple); bottom: 100px; right: -100px; }
+
+        /* Navbar */
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-glass-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Stat Card */
+        .stat-card {
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-icon-bg {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            font-size: 3.5rem;
+            opacity: 0.08;
+            color: #fff;
+        }
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-lbl {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Action Cards */
+        .action-card {
+            padding: 24px;
+            text-decoration: none;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            height: 100%;
+        }
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Exam Card */
+        .exam-card {
+            padding: 20px;
+            border-left: 4px solid var(--accent-indigo);
+        }
+
+        .dropdown-menu-dark-glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:home' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">ExamMatrix Admin</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Master Governance Panel</div>
+                </div>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <a href="{% url 'exam:home' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-globe me-1"></i> Public Home
+                </a>
+                
+                <div class="dropdown">
+                    <button class="btn btn-sm glass-card border text-white dropdown-toggle px-3 py-2 rounded-pill" type="button" id="adminMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle text-purple me-1"></i> Administrator
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark-glass dropdown-menu-end shadow mt-2" aria-labelledby="adminMenuDropdown">
+                        <li>
+                            <form method="post" action="{% url 'exam:admin_logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Header Banner -->
+        <div class="glass-card p-4 p-md-5 mb-4 position-relative overflow-hidden">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 mb-3 fw-semibold">
+                        <i class="bi bi-speedometer2 me-1"></i> System Overview
+                    </span>
+                    <h1 class="fw-extrabold text-white mb-2 fs-2">Welcome to Admin Control Center</h1>
+                    <p class="text-secondary fs-6 mb-0">Manage university departments, hall grid configurations, anti-cheat seating matrix, and invigilator duties.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <a href="{% url 'exam:seat_allocation' %}" class="btn btn-primary btn-lg rounded-3 fw-bold shadow-lg" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo)); border: none;">
+                        <i class="bi bi-cpu-fill me-2"></i> Run Seat Allocation
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Metrics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="glass-card stat-card">
+                    <i class="bi bi-people-fill stat-icon-bg"></i>
+                    <div class="stat-val">{{ total_students }}</div>
+                    <div class="stat-lbl">Total Students</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card stat-card">
+                    <i class="bi bi-person-badge-fill stat-icon-bg"></i>
+                    <div class="stat-val">{{ total_teachers }}</div>
+                    <div class="stat-lbl">Total Faculty</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card stat-card">
+                    <i class="bi bi-journal-check stat-icon-bg"></i>
+                    <div class="stat-val">{{ total_exams }}</div>
+                    <div class="stat-lbl">Total Exams</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="glass-card stat-card">
+                    <i class="bi bi-building-fill stat-icon-bg"></i>
+                    <div class="stat-val">{{ total_halls }}</div>
+                    <div class="stat-lbl">Exam Halls</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Management & Quick Actions Grid -->
+        <h3 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+            <i class="bi bi-grid-fill text-purple"></i> Quick Management Operations
+        </h3>
+        
+        <div class="row g-4 mb-5">
+            <!-- Manage Students -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:manage_students' %}" class="glass-card action-card">
+                    <div class="action-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div>
+                        <div class="action-title">Manage Students</div>
+                        <p class="action-desc">Add, edit, search records, or bulk upload via Excel / CSV datasets.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Manage Teachers -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:manage_teachers' %}" class="glass-card action-card">
+                    <div class="action-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                    <div>
+                        <div class="action-title">Manage Faculty</div>
+                        <p class="action-desc">Faculty registration, employee IDs, subject assignments, & batch imports.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Manage Exams -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:manage_exams' %}" class="glass-card action-card">
+                    <div class="action-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <div>
+                        <div class="action-title">Manage Exams</div>
+                        <p class="action-desc">Schedule exam dates, time slots, multi-department exams, and halls.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Manage Halls -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:manage_halls' %}" class="glass-card action-card">
+                    <div class="action-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div>
+                        <div class="action-title">Manage Halls</div>
+                        <p class="action-desc">Configure hall names and Rows × Columns grid capacities.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Manage Departments -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:manage_departments' %}" class="glass-card action-card">
+                    <div class="action-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <div>
+                        <div class="action-title">Manage Departments</div>
+                        <p class="action-desc">Define academic departments for interleaving seating allocation.</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Seat Allocation Engine -->
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'exam:seat_allocation' %}" class="glass-card action-card border-primary">
+                    <div class="action-icon" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+                    <div>
+                        <div class="action-title text-primary">Seating Allocation Matrix</div>
+                        <p class="action-desc">Run Anti-Cheat algorithm to interleave multi-dept students across halls.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Upcoming Exams Schedule -->
+        <h3 class="fw-bold text-white mb-3 fs-5 d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-cyan"></i> Scheduled Exams Overview
+        </h3>
+
+        {% if upcoming_exams %}
+            <div class="row g-4">
+                {% for exam in upcoming_exams %}
+                    <div class="col-md-6">
+                        <div class="glass-card exam-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold text-white mb-0">{{ exam.exam_name }}</h5>
+                                <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Scheduled</span>
+                            </div>
+                            
+                            <div class="text-secondary fs-6 mb-3">
+                                <div><i class="bi bi-calendar3 me-2 text-indigo"></i><strong>Date:</strong> {{ exam.date|date:"F d, Y" }}</div>
+                                <div><i class="bi bi-clock me-2 text-indigo"></i><strong>Time:</strong> {{ exam.start_time }} - {{ exam.end_time }}</div>
+                                <div><i class="bi bi-diagram-3 me-2 text-indigo"></i><strong>Departments:</strong> 
+                                    {% for dept in exam.department.all %}
+                                        <span class="badge bg-dark border text-light me-1">{{ dept.name }}</span>
+                                    {% empty %}
+                                        N/A
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <a href="{% url 'exam:all_seating_plans' exam.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                View Seating Matrix <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass-card p-4 text-center text-muted">
+                <i class="bi bi-info-circle fs-3 d-block mb-2 text-secondary"></i>
+                No upcoming exams scheduled. Click <strong>Manage Exams</strong> above to schedule a new examination slot.
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

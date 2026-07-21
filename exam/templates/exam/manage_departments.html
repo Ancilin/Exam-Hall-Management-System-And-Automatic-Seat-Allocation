@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Departments - ExamMatrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-cyan); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-control, input[type="text"] {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+        }
+
+        .table-dark-glass {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-glass);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:admin_dashboard' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Manage Departments</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Academic Department Management</div>
+                </div>
+            </a>
+
+            <div class="ms-auto">
+                <a href="{% url 'exam:admin_dashboard' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} bg-opacity-25 border-0 text-white rounded-3 mb-4" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="glass-card p-4 p-md-5 mb-4">
+            <h4 class="fw-bold text-white mb-4 text-center d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-plus-circle-fill text-cyan"></i> Add New Academic Department
+            </h4>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger bg-danger bg-opacity-25 border-0 text-white mb-3">
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="form-label text-white fw-semibold">Department Name:</label>
+                    <input 
+                        type="text" 
+                        name="{{ form.name.name }}" 
+                        id="{{ form.name.id_for_label }}" 
+                        class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                        placeholder="e.g., Department of Computer Applications" 
+                        value="{% if form.name.value %}{{ form.name.value }}{% endif %}"
+                        required 
+                    >
+                    {% for error in form.name.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary rounded-pill w-100 py-3 fw-bold" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); border: none;">
+                    Save Department
+                </button>
+            </form>
+        </div>
+
+        <!-- Directory Card -->
+        <div class="glass-card p-4">
+            <h4 class="fw-bold text-white mb-4 fs-5 d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3 text-cyan"></i> Academic Departments Directory
+            </h4>
+            
+            <div class="table-responsive">
+                <table class="table table-dark-glass align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                            <th>Department Name</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                        {% for dept in departments %}
+                            <tr>
+                                <td class="fw-bold text-white fs-6"><i class="bi bi-building me-2 text-cyan"></i>{{ dept.name }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'exam:edit_department' dept.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3 me-1">Edit</a>
+                                    <a href="{% url 'exam:delete_department' dept.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No departments found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

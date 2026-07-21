@@ -1,0 +1,402 @@
+{% load exam_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seating Grid Detail Matrix - ExamMatrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-cyan: #06b6d4;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .blob-1 { width: 500px; height: 500px; background: var(--accent-indigo); top: -100px; left: -100px; }
+
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .navbar-brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .seat-grid-container {
+            display: grid;
+            gap: 16px 24px;
+            margin: 20px auto;
+            padding: 10px;
+            max-width: fit-content;
+            opacity: 0; 
+            transition: opacity 0.3s ease-in;
+            grid-template-rows: repeat(var(--rows, 1), 1fr);
+            grid-auto-flow: column; 
+        }
+        .seat-grid-container.ready {
+            opacity: 1;
+        }
+
+        .seat {
+            position: relative;
+            width: 155px; 
+            height: 130px; 
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.25s ease;
+            padding: 8px;
+        }
+        .seat:hover {
+            transform: scale(1.06) translateY(-2px);
+            z-index: 20;
+        }
+
+        .seat.occupied {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+        }
+        .seat.occupied:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.7);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .seat.empty {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            color: var(--text-secondary);
+        }
+
+        .seat-label-badge {
+            position: absolute;
+            top: -10px;
+            left: -8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+            z-index: 10; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .roll-no {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #60a5fa; 
+            letter-spacing: -0.01em;
+        }
+        .student-name {
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+
+        .legend-box {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            border-radius: 6px;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+            *, *:before, *:after {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+            .navbar-glass, .ambient-blob, .no-print, nav, footer, .btn, .legend-box {
+                display: none !important;
+            }
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .glass-card {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #0f172a !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                border-radius: 6px !important;
+                padding: 8px 14px !important;
+                margin-bottom: 8px !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .glass-card h1, .glass-card h2, .glass-card h4, .glass-card h5 {
+                font-size: 1.1rem !important;
+                margin-bottom: 2px !important;
+                color: #0f172a !important;
+                -webkit-text-fill-color: #0f172a !important;
+            }
+            .text-white, .text-secondary, .text-muted, div, span, p, label, strong {
+                color: #0f172a !important;
+                -webkit-text-fill-color: #0f172a !important;
+                font-size: 0.82rem !important;
+            }
+            .badge {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                background: #f1f5f9 !important;
+                padding: 2px 6px !important;
+                font-size: 0.75rem !important;
+            }
+            .seat-grid-container {
+                opacity: 1 !important;
+                margin: 4px auto !important;
+                padding: 0 !important;
+                gap: 6px 10px !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+            }
+            .seat {
+                width: 125px !important;
+                height: 85px !important;
+                border-radius: 6px !important;
+                padding: 4px !important;
+                box-shadow: none !important;
+                page-break-inside: avoid !important;
+            }
+            .seat.occupied {
+                background-color: #f0f7ff !important;
+                border: 1.5px solid #0284c7 !important;
+            }
+            .seat.empty {
+                background-color: #ffffff !important;
+                border: 1.5px dashed #64748b !important;
+                color: #475569 !important;
+            }
+            .seat-label-badge {
+                position: absolute !important;
+                top: -7px !important;
+                left: -5px !important;
+                background: #0284c7 !important;
+                color: #ffffff !important;
+                -webkit-text-fill-color: #ffffff !important;
+                border-radius: 4px !important;
+                padding: 1px 5px !important;
+                font-size: 0.7rem !important;
+                font-weight: bold !important;
+                box-shadow: none !important;
+            }
+            .roll-no {
+                color: #0369a1 !important;
+                -webkit-text-fill-color: #0369a1 !important;
+                font-size: 0.88rem !important;
+                font-weight: bold !important;
+            }
+            .student-name {
+                color: #0f172a !important;
+                -webkit-text-fill-color: #0f172a !important;
+                font-size: 0.78rem !important;
+                font-weight: 600 !important;
+                line-height: 1.1 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top navbar-glass py-3 mb-4 no-print">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:admin_dashboard' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white">Seating Plan Matrix</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Individual Hall Seat Grid Arrangement</div>
+                </div>
+            </a>
+
+            <div class="ms-auto d-flex gap-2">
+                <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print Matrix
+                </button>
+                <a href="{% url 'exam:all_seating_plans' exam.id %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Seating Plans
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Hall & Exam Header Card -->
+        <div class="glass-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                <div>
+                    <span class="badge bg-indigo bg-opacity-25 text-indigo border border-indigo border-opacity-25 rounded-pill px-3 py-2 mb-2 fw-semibold">
+                        <i class="bi bi-building me-1"></i> {{ hall.hall_name }} Grid Layout
+                    </span>
+                    <h1 class="fw-extrabold text-white mb-1 fs-2">{{ exam.combined_name|default:exam.exam_name }}</h1>
+                    <p class="text-secondary fs-6 mb-0"><i class="bi bi-calendar3 me-1 text-blue"></i> Date: {{ exam.date|date:"F d, Y" }} • Time: {{ exam.start_time }} - {{ exam.end_time }}</p>
+                </div>
+                <div class="text-md-end">
+                    <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 fs-6">
+                        Capacity: {{ hall.capacity }} ({{ hall.rows }} Rows × {{ hall.columns }} Cols)
+                    </span>
+                </div>
+            </div>
+
+            <div class="row g-3 text-secondary pt-3 border-top border-white border-opacity-10" style="font-size: 0.9rem;">
+                <div class="col-md-6">
+                    <div><i class="bi bi-diagram-3 me-2 text-cyan"></i><strong>Departments:</strong> 
+                        {% if involved_departments %}
+                            {{ involved_departments|join:", " }}
+                        {% else %}
+                            {% with dept=exam.department.all.first %}{{ dept.name|default:"N/A" }}{% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div><i class="bi bi-person-badge me-2 text-cyan"></i><strong>Lead Invigilator:</strong> Prof. {{ invigilator|default:"Unassigned" }} ({{ invigilator_subject|default:"N/A" }})</div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="d-flex align-items-center gap-4 mt-4 pt-3 border-top border-white border-opacity-10" style="font-size: 0.85rem;">
+                <div class="d-flex align-items-center">
+                    <div class="legend-box" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4);"></div>
+                    <span class="text-white fw-semibold">Occupied Seat</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="legend-box" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.2);"></div>
+                    <span class="text-secondary">Empty Seat</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seating Grid Rendering Card -->
+        <div class="glass-card p-4 mb-4">
+            <h4 class="fw-bold text-white mb-3 fs-5 text-center">
+                <i class="bi bi-grid-3x3 text-blue me-2"></i> {{ hall.hall_name }} Interactive Seating Grid
+            </h4>
+            
+            <div class="table-responsive">
+                <div class="seat-grid-container" id="seat-grid" style="--rows: {{ hall.rows }}; --cols: {{ hall.columns }};"> 
+                    
+                    {% for seat in all_seats %}
+                        {% if seat.type == "occupied" %} 
+                            <div class="seat occupied" data-row="{{ seat.row_pos }}" data-col="{{ seat.col_pos }}">
+                                <span class="seat-label-badge">{{ seat.seat_number }}</span> 
+                                <div class="roll-no">{{ seat.roll_no }}</div>
+                                <div class="student-name">{{ seat.student_name }}</div>
+                                <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25 mt-1" style="font-size: 0.68rem;" data-bs-toggle="tooltip" title="{{ seat.exam_name }}">
+                                    {{ seat.exam_name|truncatechars:14 }}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="seat empty" data-row="{{ seat.row_pos }}" data-col="{{ seat.col_pos }}">
+                                <span class="seat-label-badge" style="background: rgba(255, 255, 255, 0.2); color: #fff;">{{ seat.seat_number }}</span>
+                                <span style="font-size: 0.8rem;">Empty</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4 no-print">
+            <a href="{% url 'exam:all_seating_plans' exam.id %}" class="btn btn-outline-light rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i> Back to All Seating Plans
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridContainer = document.getElementById('seat-grid');
+            
+            document.querySelectorAll('.seat[data-row], .seat[data-col]').forEach(function(el) {
+                var r = el.getAttribute('data-row');
+                var c = el.getAttribute('data-col');
+                if (r) el.style.gridRowStart = r;
+                if (c) el.style.gridColumnStart = c;
+            });
+
+            gridContainer.classList.add('ready');
+
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Portal Login - ExamMatrix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #0284c7;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.35;
+        }
+        .blob-1 { width: 400px; height: 400px; background: var(--accent-blue); top: -100px; left: -100px; }
+        .blob-2 { width: 500px; height: 500px; background: var(--accent-cyan); bottom: -150px; right: -100px; }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 32px;
+        }
+
+        .brand-badge {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #fff;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid var(--border-glass) !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            padding: 12px 16px 12px 42px !important;
+            font-size: 0.95rem;
+        }
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.07) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+        }
+        .form-control::placeholder { color: var(--text-secondary); }
+
+        .input-icon-box {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            z-index: 5;
+        }
+
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 13px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.5);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+
+    <div class="container d-flex justify-content-center px-3">
+        <div class="glass-card text-center">
+            
+            <div class="brand-badge">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            
+            <h3 class="fw-extrabold text-white mb-1">Student Portal</h3>
+            <p class="text-secondary fs-6 mb-4">Log in to view assigned hall & seat code.</p>
+            
+            {% if messages %}
+                <div class="mb-3">
+                    {% for message in messages %}
+                        <div class="alert alert-danger border-0 bg-danger bg-opacity-25 text-danger-emphasis text-start py-2 px-3 rounded-3 mb-2" style="font-size: 0.88rem;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3 position-relative text-start">
+                    <i class="bi bi-person-vcard input-icon-box"></i>
+                    {{ form.roll_no }}
+                    {% for error in form.roll_no.errors %}
+                        <div class="text-danger small mt-1" style="font-size: 0.8rem;">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mb-4 position-relative text-start">
+                    <i class="bi bi-key-fill input-icon-box"></i>
+                    {{ form.password }}
+                    {% for error in form.password.errors %}
+                        <div class="text-danger small mt-1" style="font-size: 0.8rem;">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn btn-glow w-100 fs-6">
+                    Sign In to Student Portal <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+                
+                <div class="mt-4 pt-3 border-top border-white border-opacity-10">
+                    <a href="{% url 'exam:home' %}" class="text-secondary text-decoration-none" style="font-size: 0.88rem;">
+                        <i class="bi bi-arrow-left me-1"></i> Back to System Overview
+                    </a>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

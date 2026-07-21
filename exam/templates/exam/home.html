@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart Exam Hall Management & Anti-Cheat Allocation System</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glass-hover: rgba(255, 255, 255, 0.2);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-indigo: #6366f1;
+            --accent-purple: #a855f7;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glow Background Blobs */
+        .ambient-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-indigo);
+            top: -100px;
+            left: -100px;
+        }
+        .blob-2 {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-cyan);
+            top: 400px;
+            right: -150px;
+        }
+        .blob-3 {
+            width: 450px;
+            height: 450px;
+            background: var(--accent-purple);
+            bottom: 200px;
+            left: 20%;
+        }
+
+        /* Modern Glass Navbar */
+        .navbar-glass {
+            background: rgba(9, 13, 22, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            transition: all 0.3s ease;
+        }
+        .navbar-brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.1rem !important;
+            transition: color 0.2s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary) !important;
+        }
+        .status-badge {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #34d399;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 90px 0 60px;
+            text-align: center;
+        }
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .hero-title {
+            font-size: 3.4rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-sub {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 760px;
+            margin: 0 auto 36px;
+            line-height: 1.6;
+        }
+
+        /* Custom Glass Card Styling */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-glass-hover);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin: 0 auto 12px;
+        }
+
+        /* Portal Cards */
+        .portal-card {
+            padding: 36px 28px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+        }
+        .portal-icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+        .portal-card:hover .portal-icon-box {
+            transform: scale(1.1) rotate(4deg);
+        }
+
+        /* Color Variations for Portals */
+        .portal-admin .portal-icon-box {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .portal-teacher .portal-icon-box {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .portal-student .portal-icon-box {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .portal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .portal-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .portal-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 28px 0;
+        }
+        .portal-features li {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .portal-features li i {
+            color: var(--accent-emerald);
+        }
+
+        /* Custom Modern Buttons */
+        .btn-glow {
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .btn-primary-glow {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+            color: #fff;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+            border: none;
+        }
+        .btn-primary-glow:hover {
+            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        .btn-admin-glow {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            border: none;
+        }
+        .btn-admin-glow:hover {
+            background: linear-gradient(135deg, #4338ca, #6d28d9);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-teacher-glow {
+            background: linear-gradient(135deg, #059669, #0d9488);
+            color: #fff;
+            border: none;
+        }
+        .btn-teacher-glow:hover {
+            background: linear-gradient(135deg, #047857, #0f766e);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(13, 148, 136, 0.3);
+        }
+
+        .btn-student-glow {
+            background: linear-gradient(135deg, #2563eb, #0284c7);
+            color: #fff;
+            border: none;
+        }
+        .btn-student-glow:hover {
+            background: linear-gradient(135deg, #1d4ed8, #0369a1);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3);
+        }
+
+        /* Feature Box Cards */
+        .feature-box {
+            padding: 30px;
+            height: 100%;
+        }
+        .feature-icon-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .feature-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Workflow Step Pills */
+        .workflow-step {
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #818cf8;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        .footer-glass {
+            background: rgba(9, 13, 22, 0.9);
+            border-top: 1px solid var(--border-glass);
+            padding: 40px 0 30px;
+            margin-top: 80px;
+        }
+        .tech-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            padding: 4px 12px;
+            border-radius: 50px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero-sub { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background Blobs -->
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+    <div class="ambient-blob blob-3"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-glass">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'exam:home' %}">
+                <div class="navbar-brand-logo">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-5 text-white" style="letter-spacing: -0.01em;">ExamMatrix</div>
+                    <div class="text-muted" style="font-size: 0.72rem; margin-top: -3px;">Smart Hall & Seat System</div>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2 mt-3 mt-lg-0">
+                    <li class="nav-item me-2">
+                        <span class="status-badge">
+                            <span class="pulse-dot"></span> System Online
+                        </span>
+                    </li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'exam:home' %}">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#portals">Portals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#workflow">Workflow</a></li>
+                    
+                    {% if user.is_authenticated %}
+                        {% if user.is_superuser %}
+                            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-admin-glow btn-glow" href="{% url 'exam:admin_dashboard' %}"><i class="bi bi-speedometer2"></i> Admin Panel</a></li>
+                            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'exam:admin_logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        {% elif user.teacher %}
+                            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-teacher-glow btn-glow" href="{% url 'exam:teacher_dashboard' %}"><i class="bi bi-person-badge"></i> Faculty Panel</a></li>
+                            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'exam:teacher_logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        {% elif user.student %}
+                            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-student-glow btn-glow" href="{% url 'exam:student_dashboard' %}"><i class="bi bi-mortarboard"></i> Student Portal</a></li>
+                            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'exam:student_logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-primary-glow btn-glow" href="#portals"><i class="bi bi-key-fill"></i> Sign In</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section container" style="margin-top: 60px;">
+        <div class="hero-pill">
+            <i class="bi bi-cpu-fill text-indigo"></i> Anti-Cheat Interleaving Engine • Django 5 Powered
+        </div>
+        <h1 class="hero-title">
+            Smart Exam Hall Management & <br>
+            <span>Automated Anti-Cheat Allocation</span>
+        </h1>
+        <p class="hero-sub">
+            Eliminate manual scheduling chaos. Intelligently interleave multi-department students, assign conflict-free invigilators, batch import Excel datasets, and track live attendance with zero errors.
+        </p>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+            <a href="#portals" class="btn-glow btn-primary-glow fs-6 px-4 py-3">
+                Access User Portals <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="#features" class="btn-glow glass-card text-white fs-6 px-4 py-3 border">
+                <i class="bi bi-grid-3x3-gap-fill text-cyan me-1"></i> System Architecture
+            </a>
+        </div>
+    </section>
+
+    <!-- Real-Time Statistics Bar -->
+    <section class="container mb-5">
+        <div class="row g-3">
+            <div class="col-6 col-lg-2-4 col-md-4">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_students|default:"0" }}</div>
+                    <div class="stat-label">Students</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2-4 col-md-4">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_teachers|default:"0" }}</div>
+                    <div class="stat-label">Faculty</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2-4 col-md-4">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="bi bi-building-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_halls|default:"0" }}</div>
+                    <div class="stat-label">Exam Halls</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2-4 col-md-6">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ total_departments|default:"0" }}</div>
+                    <div class="stat-label">Departments</div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2-4 col-md-6">
+                <div class="glass-card stat-card">
+                    <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <div class="stat-number">{{ upcoming_exams|default:"0" }}</div>
+                    <div class="stat-label">Upcoming Exams</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Choose Your Portal Section -->
+    <section id="portals" class="container py-5">
+        <div class="text-center mb-5">
+            <span class="text-indigo text-uppercase fw-bold tracking-wider" style="font-size: 0.85rem; letter-spacing: 2px;">Role-Based Security</span>
+            <h2 class="fw-extrabold text-white mt-1 fs-2">Select Access Portal</h2>
+            <p class="text-secondary">Choose your administrative or user role to enter the system dashboard.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Admin Portal Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card portal-card portal-admin">
+                    <div>
+                        <div class="portal-icon-box">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <h3 class="portal-title">Administrator Portal</h3>
+                        <p class="portal-desc">Full governance over halls, automated seating generation, faculty invigilation assignments, and bulk Excel data management.</p>
+                        <ul class="portal-features">
+                            <li><i class="bi bi-check-circle-fill"></i> Anti-Cheat Seating Matrix Generator</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Batch Pandas Excel / CSV Ingestion</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Hall Grid & Capacity Optimizer</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Conflict-Free Invigilator Scheduler</li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'exam:admin_login' %}" class="btn-glow btn-admin-glow w-100">
+                        Access Admin Portal <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Teacher Portal Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card portal-card portal-teacher">
+                    <div>
+                        <div class="portal-icon-box">
+                            <i class="bi bi-person-workspace"></i>
+                        </div>
+                        <h3 class="portal-title">Faculty / Invigilator</h3>
+                        <p class="portal-desc">View assigned exam halls, manage digital student check-ins during exams, and export CSV attendance sheets.</p>
+                        <ul class="portal-features">
+                            <li><i class="bi bi-check-circle-fill"></i> Real-time Invigilation Duties View</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Live Hall Attendance Marking</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Instant Attendance CSV Exports</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Shared Slot Multi-Dept Support</li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'exam:teacher_login' %}" class="btn-glow btn-teacher-glow w-100">
+                        Access Faculty Portal <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Student Portal Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card portal-card portal-student">
+                    <div>
+                        <div class="portal-icon-box">
+                            <i class="bi bi-person-bounding-box"></i>
+                        </div>
+                        <h3 class="portal-title">Student Portal</h3>
+                        <p class="portal-desc">Instant personalized seat lookup. View designated hall names, exam dates, timings, and exact seat codes in one click.</p>
+                        <ul class="portal-features">
+                            <li><i class="bi bi-check-circle-fill"></i> Personalized Exam Hall Schedule</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Precise Seat Code (e.g. S12) Location</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Mobile-Optimized Self-Service</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Zero Physical Notice Board Searching</li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'exam:student_login' %}" class="btn-glow btn-student-glow w-100">
+                        Access Student Portal <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Technical Features Grid -->
+    <section id="features" class="container py-5">
+        <div class="text-center mb-5">
+            <span class="text-cyan text-uppercase fw-bold" style="font-size: 0.85rem; letter-spacing: 2px;">Engineering Highlights</span>
+            <h2 class="fw-extrabold text-white mt-1 fs-2">Key System Features & Innovation</h2>
+            <p class="text-secondary">Built with modern software engineering principles for reliability, speed, and security.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h4 class="feature-title">Interleaving Anti-Cheat Engine</h4>
+                    <p class="feature-text">Interleaves students department-wise (A, B, C, A, B...) in a continuous grid layout across rooms to prevent exam malpractice.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
+                        <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                    </div>
+                    <h4 class="feature-title">Pandas Batch Data Import</h4>
+                    <p class="feature-text">High-performance Excel (.xlsx) and CSV batch ingestion powered by `pandas`. Validates records, handles encodings, and reports line errors.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="feature-title">Strict DB Constraints</h4>
+                    <p class="feature-text">Enforces Django `UniqueConstraint` on database level. Prevents double-booked seats, duplicate student seats, or double-booked faculty.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                        <i class="bi bi-grid-3x3"></i>
+                    </div>
+                    <h4 class="feature-title">Dynamic Hall Capacity Engine</h4>
+                    <p class="feature-text">Calculates hall capacities dynamically using `Rows × Columns` grid properties without redundant database fields.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <h4 class="feature-title">Bulk Transaction Queries</h4>
+                    <p class="feature-text">Uses `transaction.atomic()` and `bulk_create()` to execute thousands of seat assignments in milliseconds with zero N+1 query bottlenecks.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card feature-box">
+                    <div class="feature-icon-badge" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <h4 class="feature-title">Instant CSV Attendance Reports</h4>
+                    <p class="feature-text">Invigilators mark student presence in real time and generate structured downloadable CSV attendance reports for administrative record-keeping.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Pipeline Section -->
+    <section id="workflow" class="container py-5">
+        <div class="glass-card p-4 p-md-5">
+            <div class="text-center mb-5">
+                <span class="text-emerald text-uppercase fw-bold" style="font-size: 0.85rem; letter-spacing: 2px;">End-to-End Pipeline</span>
+                <h2 class="fw-extrabold text-white mt-1 fs-3">How The System Operates</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <h5 class="fw-bold text-white fs-6 mb-2">Hall & Data Setup</h5>
+                        <p class="text-secondary" style="font-size: 0.85rem;">Admin defines Hall grids (Rows × Cols) and imports Student/Faculty datasets via Excel.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <h5 class="fw-bold text-white fs-6 mb-2">Smart Allocation</h5>
+                        <p class="text-secondary" style="font-size: 0.85rem;">The algorithm interleaves multi-dept students and assigns seats continuously across halls.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <h5 class="fw-bold text-white fs-6 mb-2">Invigilation Duty</h5>
+                        <p class="text-secondary" style="font-size: 0.85rem;">Teachers view their hall duty, mark live student attendance, and export attendance sheets.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <h5 class="fw-bold text-white fs-6 mb-2">Student Self-Lookup</h5>
+                        <p class="text-secondary" style="font-size: 0.85rem;">Students log in to check their hall location and seat code (e.g. S14) instantly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sleek Glass Footer -->
+    <footer class="footer-glass">
+        <div class="container">
+            <div class="row align-items-center gy-4">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+                        <div class="navbar-brand-logo" style="width: 32px; height: 32px; font-size: 1rem;">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <span class="fw-bold text-white fs-5">ExamMatrix System</span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                        Automated Exam Scheduling, Anti-Cheat Seating Matrix & Attendance System.
+                    </p>
+                </div>
+
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2 mb-2">
+                        <span class="tech-pill"><i class="bi bi-filetype-py text-warning me-1"></i> Python 3.14</span>
+                        <span class="tech-pill"><i class="bi bi-code-slash text-success me-1"></i> Django 5.2</span>
+                        <span class="tech-pill"><i class="bi bi-bootstrap-fill text-purple me-1"></i> Bootstrap 5</span>
+                        <span class="tech-pill"><i class="bi bi-database-fill text-info me-1"></i> SQLite3</span>
+                        <span class="tech-pill"><i class="bi bi-table text-emerald me-1"></i> Pandas</span>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.8rem;">
+                        &copy; 2026 Exam Hall Management System • Production Ready
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
